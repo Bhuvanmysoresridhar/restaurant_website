@@ -43,11 +43,42 @@ const REVIEWS = [
   { name: "Vikram Patil", loc: "Baner", text: "My kids refuse to eat anywhere else. The paneer tikka has ruined all other food for them — in the best way!", av: "VP" },
 ];
 
+const MENU = [
+  { id: 1,  name: "Butter Chicken",     icon: "🍛", price: 300, category: "mains",    desc: "Slow-cooked chicken in creamy tomato sauce with Maa's secret masala blend",          tag: "★ Bestseller"      },
+  { id: 2,  name: "Dal Makhani",         icon: "🍲", price: 240, category: "mains",    desc: "Black lentils slow-cooked overnight, finished with butter and cream",                tag: "Overnight Cook"    },
+  { id: 3,  name: "Mutton Rogan Josh",   icon: "🍖", price: 360, category: "mains",    desc: "Kashmiri-style slow-braised mutton in aromatic whole spices",                        tag: "Heritage Recipe"   },
+  { id: 4,  name: "Palak Paneer",        icon: "🥬", price: 220, category: "mains",    desc: "Fresh cottage cheese in silky spinach gravy with a hint of cream",                   tag: "Vegetarian"        },
+  { id: 5,  name: "Chicken Biryani",     icon: "🍚", price: 280, category: "rice",     desc: "Dum-style biryani with whole spices and saffron-infused basmati rice",               tag: "Dum Style"         },
+  { id: 6,  name: "Veg Biryani",         icon: "🌾", price: 220, category: "rice",     desc: "Fragrant basmati with seasonal vegetables and caramelised onions",                   tag: "Vegetarian"        },
+  { id: 7,  name: "Lemon Rice",          icon: "🍋", price: 160, category: "rice",     desc: "South Indian style with mustard seed tempering and golden turmeric",                 tag: "Light & Fresh"     },
+  { id: 8,  name: "Butter Naan",         icon: "🫓", price: 60,  category: "breads",   desc: "Soft tandoor-style naan brushed with house-churned butter",                         tag: "Per Piece"         },
+  { id: 9,  name: "Aloo Paratha",        icon: "🥙", price: 80,  category: "breads",   desc: "Maa's legendary stuffed paratha with spiced potato filling and white butter",        tag: "Maa's Classic"     },
+  { id: 10, name: "Laccha Paratha",      icon: "🥞", price: 70,  category: "breads",   desc: "Flaky multi-layered whole wheat paratha, crisp outside and soft within",             tag: "Whole Wheat"       },
+  { id: 11, name: "Samosa (2 pcs)",      icon: "🥟", price: 80,  category: "snacks",   desc: "Crispy golden pastry filled with spiced potatoes and green peas",                   tag: "Street Style"      },
+  { id: 12, name: "Pakoda Platter",      icon: "🍤", price: 120, category: "snacks",   desc: "Mixed vegetable fritters served with fresh mint chutney",                           tag: "Evening Snack"     },
+  { id: 13, name: "Gulab Jamun",         icon: "🍮", price: 100, category: "desserts", desc: "Soft milk-solid dumplings soaked in rose-flavoured sugar syrup",                    tag: "Sweet Treat"       },
+  { id: 14, name: "Kheer",               icon: "🥛", price: 120, category: "desserts", desc: "Creamy rice pudding with cardamom, saffron and crunchy dry fruits",                  tag: "Maa's Recipe"      },
+];
+
+const CATEGORIES = [
+  { id: "all",      label: "All Items"       },
+  { id: "mains",    label: "Mains"           },
+  { id: "rice",     label: "Rice & Biryani"  },
+  { id: "breads",   label: "Breads"          },
+  { id: "snacks",   label: "Snacks"          },
+  { id: "desserts", label: "Desserts"        },
+];
+
 export default function StonesAndSpicesLanding() {
   const [heroLoaded, setHeroLoaded] = useState(false);
   const [navSolid, setNavSolid] = useState(false);
   const [cRef, cVis] = useOnScreen(0.3);
   const [counter, setCounter] = useState({ meals: 0, families: 0, recipes: 0, years: 0 });
+  const [cart, setCart] = useState([]);
+  const [cartOpen, setCartOpen] = useState(false);
+  const [orderSuccess, setOrderSuccess] = useState(false);
+  const [orderForm, setOrderForm] = useState({ name: "", phone: "", address: "" });
+  const [activeCategory, setActiveCategory] = useState("all");
 
   useEffect(() => { setTimeout(() => setHeroLoaded(true), 300); }, []);
   useEffect(() => {
@@ -68,6 +99,25 @@ export default function StonesAndSpicesLanding() {
     };
     requestAnimationFrame(anim);
   }, [cVis]);
+
+  const addToCart = (dish) => {
+    setCart(prev => {
+      const existing = prev.find(i => i.id === dish.id);
+      if (existing) return prev.map(i => i.id === dish.id ? { ...i, qty: i.qty + 1 } : i);
+      return [...prev, { ...dish, qty: 1 }];
+    });
+  };
+  const updateQty = (id, delta) => setCart(prev =>
+    prev.map(i => i.id === id ? { ...i, qty: Math.max(0, i.qty + delta) } : i).filter(i => i.qty > 0)
+  );
+  const cartTotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  const cartCount = cart.reduce((s, i) => s + i.qty, 0);
+  const placeOrder = (e) => {
+    e.preventDefault();
+    setOrderSuccess(true);
+    setCart([]);
+    setOrderForm({ name: "", phone: "", address: "" });
+  };
 
   return (
     <div style={{ fontFamily: "'Lora', Georgia, serif", background: "#FBF7F0", color: "#2A1810", overflowX: "hidden" }}>
@@ -96,6 +146,12 @@ export default function StonesAndSpicesLanding() {
           ))}
           <a href="#order" style={{ fontFamily: "'Outfit', sans-serif", fontSize: "12px", fontWeight: 700, background: "linear-gradient(135deg,#D4A017,#B8860B)", color: "#fff", padding: "9px 22px", borderRadius: "50px", textDecoration: "none", boxShadow: "0 3px 16px rgba(212,160,23,0.3)", transition: "transform 0.2s" }}
             onMouseOver={e => e.target.style.transform = "translateY(-2px)"} onMouseOut={e => e.target.style.transform = "none"}>Order Now</a>
+          {cartCount > 0 && (
+            <button onClick={() => setCartOpen(true)} style={{ position: "relative", background: "none", border: `1.5px solid ${navSolid ? "rgba(139,90,43,0.3)" : "rgba(251,247,240,0.3)"}`, borderRadius: "50%", width: 38, height: 38, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "16px", transition: "all 0.3s" }}>
+              🛒
+              <span style={{ position: "absolute", top: -5, right: -5, background: "#D4A017", color: "#fff", borderRadius: "50%", width: 18, height: 18, fontSize: "10px", fontFamily: "'Outfit', sans-serif", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{cartCount}</span>
+            </button>
+          )}
         </div>
       </nav>
 
@@ -393,6 +449,149 @@ export default function StonesAndSpicesLanding() {
           ))}
         </div>
       </section>
+
+      {/* ═══ ORDER / MENU SECTION ═══ */}
+      <section id="order" style={{ padding: "96px 28px 80px", background: "linear-gradient(180deg,#F5EDE0,#FBF7F0)" }}>
+        <Reveal>
+          <div style={{ textAlign: "center", maxWidth: "620px", margin: "0 auto 44px" }}>
+            <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: "11px", letterSpacing: "5px", textTransform: "uppercase", color: "#D4A017", fontWeight: 700, marginBottom: "14px", display: "flex", alignItems: "center", justifyContent: "center", gap: "12px" }}>
+              <span style={{ width: 40, height: "1.5px", background: "#D4A017" }} /> Order Online <span style={{ width: 40, height: "1.5px", background: "#D4A017" }} />
+            </div>
+            <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(34px, 4.5vw, 54px)", fontWeight: 600, color: "#2A1810", lineHeight: 1.1, marginBottom: "16px" }}>
+              Order from<br /><span style={{ fontStyle: "italic", color: "#8B5A2B" }}>Maa's Kitchen</span>
+            </h2>
+            <p style={{ fontFamily: "'Lora', serif", fontSize: "16px", color: "#8B7355", lineHeight: 1.8 }}>
+              Fresh, home-cooked meals delivered to your door in 30 minutes. Free delivery within 5 km.
+            </p>
+          </div>
+        </Reveal>
+
+        {/* Category tabs */}
+        <div style={{ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap", maxWidth: "900px", margin: "0 auto 40px" }}>
+          {CATEGORIES.map(cat => (
+            <button key={cat.id} onClick={() => setActiveCategory(cat.id)} style={{ fontFamily: "'Outfit', sans-serif", fontSize: "12px", fontWeight: 600, padding: "9px 22px", borderRadius: "50px", border: activeCategory === cat.id ? "none" : "1.5px solid rgba(139,90,43,0.2)", background: activeCategory === cat.id ? "linear-gradient(135deg,#D4A017,#B8860B)" : "transparent", color: activeCategory === cat.id ? "#fff" : "#8B5A2B", cursor: "pointer", transition: "all 0.25s", letterSpacing: "0.5px" }}>
+              {cat.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Menu grid */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: "20px", maxWidth: "980px", margin: "0 auto" }}>
+          {MENU.filter(d => activeCategory === "all" || d.category === activeCategory).map((dish, i) => {
+            const inCart = cart.find(c => c.id === dish.id);
+            return (
+              <Reveal key={dish.id} delay={i * 0.06}>
+                <div style={{ background: "#fff", borderRadius: "18px", padding: "24px", border: "1px solid rgba(139,90,43,0.07)", boxShadow: "0 2px 16px rgba(42,24,16,0.04)", transition: "all 0.35s", display: "flex", flexDirection: "column", gap: "10px", height: "100%" }}
+                  onMouseOver={e => { e.currentTarget.style.boxShadow = "0 8px 32px rgba(42,24,16,0.1)"; e.currentTarget.style.transform = "translateY(-4px)"; }}
+                  onMouseOut={e => { e.currentTarget.style.boxShadow = "0 2px 16px rgba(42,24,16,0.04)"; e.currentTarget.style.transform = "none"; }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                    <span style={{ fontSize: "38px", lineHeight: 1 }}>{dish.icon}</span>
+                    <span style={{ fontFamily: "'Outfit', sans-serif", fontSize: "9px", fontWeight: 700, color: "#D4A017", letterSpacing: "1.5px", textTransform: "uppercase", background: "rgba(212,160,23,0.1)", padding: "4px 10px", borderRadius: "20px", flexShrink: 0 }}>{dish.tag}</span>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "20px", fontWeight: 700, color: "#2A1810", marginBottom: "5px" }}>{dish.name}</div>
+                    <p style={{ fontFamily: "'Lora', serif", fontSize: "12.5px", color: "#8B7355", lineHeight: 1.7 }}>{dish.desc}</p>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "auto", paddingTop: "8px", borderTop: "1px solid rgba(139,90,43,0.07)" }}>
+                    <span style={{ fontFamily: "'Outfit', sans-serif", fontSize: "18px", fontWeight: 800, color: "#2A1810" }}>₹{dish.price}</span>
+                    {inCart ? (
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <button onClick={() => updateQty(dish.id, -1)} style={{ width: 30, height: 30, borderRadius: "50%", border: "1.5px solid #D4A017", background: "none", color: "#D4A017", cursor: "pointer", fontSize: "17px", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700 }}>−</button>
+                        <span style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: "14px", minWidth: "18px", textAlign: "center" }}>{inCart.qty}</span>
+                        <button onClick={() => updateQty(dish.id, 1)} style={{ width: 30, height: 30, borderRadius: "50%", border: "none", background: "linear-gradient(135deg,#D4A017,#B8860B)", color: "#fff", cursor: "pointer", fontSize: "17px", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700 }}>+</button>
+                      </div>
+                    ) : (
+                      <button onClick={() => addToCart(dish)} style={{ fontFamily: "'Outfit', sans-serif", fontSize: "12px", fontWeight: 700, background: "linear-gradient(135deg,#D4A017,#B8860B)", color: "#fff", border: "none", borderRadius: "50px", padding: "8px 20px", cursor: "pointer", transition: "transform 0.2s", boxShadow: "0 3px 12px rgba(212,160,23,0.3)" }}
+                        onMouseOver={e => e.currentTarget.style.transform = "scale(1.05)"}
+                        onMouseOut={e => e.currentTarget.style.transform = "none"}>
+                        Add +
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </Reveal>
+            );
+          })}
+        </div>
+
+        {/* Floating cart CTA */}
+        {cartCount > 0 && (
+          <div style={{ position: "fixed", bottom: 32, right: 32, zIndex: 150 }}>
+            <button onClick={() => setCartOpen(true)} style={{ fontFamily: "'Outfit', sans-serif", fontSize: "14px", fontWeight: 700, background: "linear-gradient(135deg,#D4A017,#B8860B)", color: "#fff", border: "none", borderRadius: "50px", padding: "14px 24px", cursor: "pointer", boxShadow: "0 6px 28px rgba(212,160,23,0.5)", display: "flex", alignItems: "center", gap: "10px", transition: "transform 0.2s" }}
+              onMouseOver={e => e.currentTarget.style.transform = "translateY(-3px)"}
+              onMouseOut={e => e.currentTarget.style.transform = "none"}>
+              🛒 View Cart
+              <span style={{ background: "rgba(255,255,255,0.25)", borderRadius: "50px", padding: "2px 10px", fontSize: "12px" }}>{cartCount} • ₹{cartTotal}</span>
+            </button>
+          </div>
+        )}
+      </section>
+
+      {/* ═══ CART DRAWER ═══ */}
+      {cartOpen && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 300 }}>
+          <div onClick={() => setCartOpen(false)} style={{ position: "absolute", inset: 0, background: "rgba(42,24,16,0.55)", backdropFilter: "blur(4px)" }} />
+          <div style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "min(420px,100vw)", background: "#FBF7F0", display: "flex", flexDirection: "column", boxShadow: "-8px 0 48px rgba(42,24,16,0.22)" }}>
+            {/* Header */}
+            <div style={{ padding: "22px 24px", borderBottom: "1px solid rgba(139,90,43,0.1)", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#fff", flexShrink: 0 }}>
+              <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "22px", fontWeight: 700, color: "#2A1810" }}>Your Order</div>
+              <button onClick={() => setCartOpen(false)} style={{ background: "none", border: "none", fontSize: "20px", cursor: "pointer", color: "#8B5A2B", padding: "4px 8px", borderRadius: "8px" }}>✕</button>
+            </div>
+
+            {orderSuccess ? (
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "16px", padding: "40px", textAlign: "center" }}>
+                <span style={{ fontSize: "68px" }}>🎉</span>
+                <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "28px", fontWeight: 700, color: "#2A1810" }}>Order Placed!</h3>
+                <p style={{ fontFamily: "'Lora', serif", fontSize: "14px", color: "#8B7355", lineHeight: 1.8 }}>Thank you, {orderForm.name || "dear customer"}! Maa is cooking your meal with love. Expect delivery in 30 minutes.</p>
+                <button onClick={() => { setOrderSuccess(false); setCartOpen(false); }} style={{ fontFamily: "'Outfit', sans-serif", fontSize: "13px", fontWeight: 700, background: "linear-gradient(135deg,#D4A017,#B8860B)", color: "#fff", border: "none", borderRadius: "50px", padding: "12px 30px", cursor: "pointer", boxShadow: "0 4px 20px rgba(212,160,23,0.35)" }}>Close</button>
+              </div>
+            ) : cart.length === 0 ? (
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "16px", color: "#B89B7A", padding: "40px", textAlign: "center" }}>
+                <span style={{ fontSize: "56px" }}>🍽️</span>
+                <p style={{ fontFamily: "'Lora', serif", fontSize: "16px", lineHeight: 1.7 }}>Your cart is empty.<br />Start adding Maa's dishes!</p>
+                <button onClick={() => setCartOpen(false)} style={{ fontFamily: "'Outfit', sans-serif", fontSize: "13px", fontWeight: 600, color: "#D4A017", background: "none", border: "1.5px solid #D4A017", borderRadius: "50px", padding: "10px 24px", cursor: "pointer" }}>Browse Menu →</button>
+              </div>
+            ) : (
+              <>
+                {/* Cart items */}
+                <div style={{ flex: 1, overflowY: "auto", padding: "12px 24px" }}>
+                  {cart.map(item => (
+                    <div key={item.id} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "14px 0", borderBottom: "1px solid rgba(139,90,43,0.08)" }}>
+                      <span style={{ fontSize: "26px", flexShrink: 0 }}>{item.icon}</span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: "13px", fontWeight: 600, color: "#2A1810", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.name}</div>
+                        <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: "12px", color: "#B89B7A" }}>₹{item.price} each</div>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "7px", flexShrink: 0 }}>
+                        <button onClick={() => updateQty(item.id, -1)} style={{ width: 26, height: 26, borderRadius: "50%", border: "1.5px solid #D4A017", background: "none", color: "#D4A017", cursor: "pointer", fontSize: "15px", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700 }}>−</button>
+                        <span style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: "14px", minWidth: "18px", textAlign: "center" }}>{item.qty}</span>
+                        <button onClick={() => updateQty(item.id, 1)} style={{ width: 26, height: 26, borderRadius: "50%", border: "none", background: "linear-gradient(135deg,#D4A017,#B8860B)", color: "#fff", cursor: "pointer", fontSize: "15px", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700 }}>+</button>
+                      </div>
+                      <div style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: "13px", color: "#2A1810", minWidth: "50px", textAlign: "right" }}>₹{item.price * item.qty}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Order form + total */}
+                <div style={{ padding: "20px 24px", borderTop: "1px solid rgba(139,90,43,0.1)", background: "#fff", flexShrink: 0 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
+                    <span style={{ fontFamily: "'Outfit', sans-serif", fontSize: "14px", fontWeight: 600, color: "#6B5244" }}>Total ({cartCount} items)</span>
+                    <span style={{ fontFamily: "'Outfit', sans-serif", fontSize: "20px", fontWeight: 800, color: "#D4A017" }}>₹{cartTotal}</span>
+                  </div>
+                  <form onSubmit={placeOrder} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                    <input required placeholder="Your Name" value={orderForm.name} onChange={e => setOrderForm(p => ({ ...p, name: e.target.value }))} style={{ fontFamily: "'Outfit', sans-serif", fontSize: "13px", padding: "11px 14px", borderRadius: "10px", border: "1px solid rgba(139,90,43,0.2)", outline: "none", background: "#FBF7F0", color: "#2A1810" }} />
+                    <input required placeholder="Phone Number" value={orderForm.phone} onChange={e => setOrderForm(p => ({ ...p, phone: e.target.value }))} style={{ fontFamily: "'Outfit', sans-serif", fontSize: "13px", padding: "11px 14px", borderRadius: "10px", border: "1px solid rgba(139,90,43,0.2)", outline: "none", background: "#FBF7F0", color: "#2A1810" }} />
+                    <input required placeholder="Delivery Address" value={orderForm.address} onChange={e => setOrderForm(p => ({ ...p, address: e.target.value }))} style={{ fontFamily: "'Outfit', sans-serif", fontSize: "13px", padding: "11px 14px", borderRadius: "10px", border: "1px solid rgba(139,90,43,0.2)", outline: "none", background: "#FBF7F0", color: "#2A1810" }} />
+                    <button type="submit" style={{ fontFamily: "'Outfit', sans-serif", fontSize: "14px", fontWeight: 700, background: "linear-gradient(135deg,#D4A017,#B8860B)", color: "#fff", border: "none", borderRadius: "50px", padding: "14px", cursor: "pointer", marginTop: "4px", boxShadow: "0 4px 20px rgba(212,160,23,0.4)" }}>
+                      Place Order · ₹{cartTotal}
+                    </button>
+                  </form>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* ═══ QUOTE DIVIDER ═══ */}
       <section style={{
