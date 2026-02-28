@@ -1,0 +1,10 @@
+{
+  "name": "stones-landing",
+  "version": "1.0.0",
+  "description": "Minimal project for serving static files",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "license": "MIT"
+}

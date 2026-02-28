@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Stones Landing — Static Preview</title>
+  <style>body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;margin:32px;color:#111}pre{background:#f6f8fa;padding:12px;border-radius:6px;white-space:pre-wrap;overflow:auto}</style>
+</head>
+<body>
+  <h1>Stones Landing</h1>
+  <p>This server serves static files. You can download or preview the React source:</p>
+  <ul>
+    <li><a href="stones-landing-v2.jsx">Download stones-landing-v2.jsx</a></li>
+  </ul>
+  <h2>Preview (first 2k chars)</h2>
+  <div id="preview"><em>Loading preview…</em></div>
+
+  <script>
+    fetch('stones-landing-v2.jsx').then(r=>{
+      if(!r.ok) throw new Error('Not found');
+      return r.text();
+    }).then(t=>{
+      const s = t.slice(0,2000).replace(/</g,'&lt;');
+      document.getElementById('preview').innerHTML = '<pre>'+s+'\n\n... (truncated) </pre>';
+    }).catch(()=>{ document.getElementById('preview').innerText = 'No preview available.' });
+  </script>
+</body>
+</html>
